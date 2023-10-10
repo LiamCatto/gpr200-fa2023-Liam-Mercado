@@ -11,12 +11,14 @@
 #include <ew/shader.h>
 #include <ew/ewMath/vec3.h>
 #include <ew/procGen.h>
+#include <lm/transformations.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Square aspect ratio for now. We will account for this with projection later.
 const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
+const int NUM_CUBES = 4;
 
 int main() {
 	printf("Initializing...");
@@ -55,6 +57,13 @@ int main() {
 	
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
+
+	lm::Transform transform[NUM_CUBES];
+
+	transform[0].position = ew::Vec3(-0.5f, 0.5f, 0.0f);
+	transform[1].position = ew::Vec3(0.5f, 0.5f, 0.0f);
+	transform[2].position = ew::Vec3(0.5f, -0.5f, 0.0f);
+	transform[3].position = ew::Vec3(-0.5f, -0.5f, 0.0f);
 	
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -65,9 +74,22 @@ int main() {
 		//Set uniforms
 		shader.use();
 
-		//TODO: Set model matrix uniform
-
+		// Cube #1
+		shader.setMat4("_Model", transform[0].getModelMatrix());
 		cubeMesh.draw();
+		
+		// Cube #2
+		shader.setMat4("_Model", transform[1].getModelMatrix());
+		cubeMesh.draw();
+
+		// Cube #3
+		shader.setMat4("_Model", transform[2].getModelMatrix());
+		cubeMesh.draw();
+
+		// Cube #4
+		shader.setMat4("_Model", transform[3].getModelMatrix());
+		cubeMesh.draw();
+		
 
 		//Render UI
 		{
@@ -76,6 +98,42 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Transform");
+			for (size_t i = 0; i < NUM_CUBES; i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::CollapsingHeader("Transform")) {
+					ImGui::DragFloat3("Position", &transform[i].position.x, 0.05f);
+					ImGui::DragFloat3("Rotation", &transform[i].rotation.x, 0.1f);
+					ImGui::DragFloat3("Scale", &transform[i].scale.x, 0.05f);
+				}
+				if (ImGui::Button("Reset"))
+				{
+					switch (i)
+					{
+					case 0:
+						transform[0].position = ew::Vec3(-0.5f, 0.5f, 0.0f);
+						transform[0].rotation = ew::Vec3(0.0f, 0.0f, 0.0f);
+						transform[0].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						break;
+					case 1:
+						transform[1].position = ew::Vec3(0.5f, 0.5f, 0.0f);
+						transform[1].rotation = ew::Vec3(0.0f, 0.0f, 0.0f);
+						transform[1].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						break;
+					case 2:
+						transform[2].position = ew::Vec3(0.5f, -0.5f, 0.0f);
+						transform[2].rotation = ew::Vec3(0.0f, 0.0f, 0.0f);
+						transform[2].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						break;
+					case 3:
+						transform[3].position = ew::Vec3(-0.5f, -0.5f, 0.0f);
+						transform[3].rotation = ew::Vec3(0.0f, 0.0f, 0.0f);
+						transform[3].scale = ew::Vec3(1.0f, 1.0f, 1.0f);
+						break;
+					}
+				}
+				ImGui::PopID();
+			}
 			ImGui::End();
 
 			ImGui::Render();
