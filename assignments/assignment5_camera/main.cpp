@@ -95,11 +95,11 @@ int main() {
 		{
 			//Construct model matrix
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
+			shader.setMat4("_View", camera.ViewMatrix());
+			shader.setMat4("_Projection", camera.ProjectionMatrix());
 			cubeMesh.draw();
 		}
 
-		shader.setMat4("_View", camera.ViewMatrix());
-		shader.setMat4("_Projection", camera.ProjectionMatrix());
 
 		//Render UI
 		{

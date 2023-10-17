@@ -80,7 +80,7 @@ namespace lm {
 	//up = up axis, usually(0,1,0)
 	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
 
-		ew::Vec3 f = ew::Normalize(target - eye);
+		ew::Vec3 f = ew::Normalize(eye - target);
 		ew::Vec3 r = ew::Normalize(ew::Cross(f, up));
 		ew::Vec3 u = ew::Cross(f, r);
 
@@ -132,6 +132,7 @@ namespace lm {
 	//Perspective projection
 	//fov = vertical aspect ratio (radians)
 	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
+		fov *= ew::DEG2RAD;
 		return ew::Mat4(
 			1 / (std::tan(fov / 2) * aspect), 0						 , 0														   , 0,
 			0							    , 1 / (std::tan(fov / 2)), 0														   , 0,
