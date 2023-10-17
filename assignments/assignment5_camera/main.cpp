@@ -12,6 +12,8 @@
 #include <ew/procGen.h>
 #include <ew/transform.h>
 
+#include <lm/camera.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Projection will account for aspect ratio!
@@ -66,6 +68,19 @@ int main() {
 		cubeTransforms[i].position.y = i / (NUM_CUBES / 2) - 0.5;
 	}
 
+	lm::Camera camera;
+
+	// Camera properties
+
+	camera.position = ew::Vec3(0.0, 0.0, 5.0);
+	camera.target = ew::Vec3(0.0, 0.0, 0.0);
+	camera.fov = 60.0;
+	camera.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+	camera.nearPlane = 0.1;
+	camera.farPlane = 100.0;
+	camera.orthographic = true;
+	camera.orthoSize = 6.0;
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -82,6 +97,9 @@ int main() {
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
 			cubeMesh.draw();
 		}
+
+		shader.setMat4("_View", camera.ViewMatrix());
+		shader.setMat4("_Projection", camera.ProjectionMatrix());
 
 		//Render UI
 		{
@@ -102,6 +120,13 @@ int main() {
 				ImGui::PopID();
 			}
 			ImGui::Text("Camera");
+			ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
+			ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
+			ImGui::DragFloat("FOV", &camera.fov, 0.05f);
+			ImGui::Checkbox("Orthographic", &camera.orthographic);
+			ImGui::DragFloat("Orthographic Height", &camera.orthoSize, 0.05f);
+			ImGui::DragFloat("Near", &camera.nearPlane, 0.05f);
+			ImGui::DragFloat("Far", &camera.farPlane, 0.05f);
 			ImGui::End();
 			
 			ImGui::Render();

@@ -11,7 +11,7 @@ namespace lm {
 	}
 
 	//View->Clip
-	ew::Mat4 Camera::ProjectionMatrix()
+	ew::Mat4 Camera::ProjectionMatrix()		// Something is wrong with my projection matrix
 	{
 		if (orthographic)
 		{

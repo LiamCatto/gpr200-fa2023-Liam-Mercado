@@ -114,7 +114,7 @@ namespace lm {
 
 	//Orthographic projection
 	inline ew::Mat4 Orthographic(float height, float aspect, float near, float far) {
-
+		
 		float width = aspect * height;
 		float r = width / 2;	// Right Bounds
 		float l = -r;			// Left Bounds
