@@ -92,7 +92,7 @@ int main() {
 
 		//TODO: Set model matrix uniform
 		for (size_t i = 0; i < NUM_CUBES; i++)
-		{
+		{  
 			//Construct model matrix
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
 			shader.setMat4("_View", camera.ViewMatrix());
