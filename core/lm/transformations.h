@@ -81,8 +81,8 @@ namespace lm {
 	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
 
 		ew::Vec3 f = ew::Normalize(eye - target);  
-		ew::Vec3 r = ew::Normalize(ew::Cross(f, up));
-		ew::Vec3 u = ew::Cross(f, r);
+		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));
+		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));
 
 		ew::Mat4 R = ew::Mat4(
 			r.x, r.y, r.z, 0,
@@ -92,9 +92,9 @@ namespace lm {
 		);
 
 		ew::Mat4 T = ew::Mat4(
-			1, 0, 0, -up.x,
-			0, 1, 0, -up.y,
-			0, 0, 1, -up.z,
+			1, 0, 0, -eye.x,
+			0, 1, 0, -eye.y,
+			0, 0, 1, -eye.z,
 			0, 0, 0, 1
 		);
 
@@ -124,7 +124,7 @@ namespace lm {
 		return ew::Mat4(
 			2 / (r - l), 0			, 0				  , -((r + l) / (r - l)),
 			0		   , 2 / (t - b), 0				  , -((t + b) / (t - b)),
-			0		   , 0			, 2 / (far - near), -((far + near) / (far - near)),
+			0		   , 0			, -2 / (far - near), -((far + near) / (far - near)),
 			0		   , 0			, 0				  , 1
 		);
 	};
