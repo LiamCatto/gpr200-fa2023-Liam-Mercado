@@ -4,6 +4,7 @@
 #include "../ew/ewMath/vec3.h"
 #include <cmath>
 #include <vector>
+#include <GLFW/glfw3.h>
 
 namespace lm {
 
@@ -78,11 +79,28 @@ namespace lm {
 	//eye = eye (camera) position
 	//target = position to look at
 	//up = up axis, usually(0,1,0)
-	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
+	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up, float speed, bool orbit) {
 
-		ew::Vec3 f = ew::Normalize(eye - target);  
-		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));
-		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));
+		ew::Vec3 f = ew::Normalize(eye - target);		// Forward
+		ew::Vec3 r = ew::Normalize(ew::Cross(up, f));	// Right
+		ew::Vec3 u = ew::Normalize(ew::Cross(f, r));	// Up
+
+		float t = (float)glfwGetTime();
+		float movement = t;
+
+		ew::Mat4 orbit_R = ew::Mat4(
+			r.x, 0, r.z, 0,
+			u.x, 0, u.z, 0,
+			f.x, 0, f.z, 0,
+			0  , 0, 0  , 1
+		);
+
+		ew::Mat4 orbit_T = ew::Mat4(
+			1, 0, 0, sin(movement),
+			0, 1, 0, 0,
+			0, 0, 1, -sin(movement)/2,
+			0, 0, 0, 1
+		);
 
 		ew::Mat4 R = ew::Mat4(
 			r.x, r.y, r.z, 0,
@@ -98,16 +116,12 @@ namespace lm {
 			0, 0, 0, 1
 		);
 
-		return R * T;
+		if (orbit)
+		{
+			return R * orbit_T * T;
+		}
 
-		/*
-		return ew::Mat4(
-			r.x, r.y, r.z, -(ew::Cross(r, up)),
-			u.x, u.y, u.z, -(ew::Cross(u, up)),
-			f.x, f.y, f.z, -(ew::Cross(f, up)),
-			0  , 0  , 0  , 1
-		);
-		*/
+		return R * T;
 
 			//use ew::Cross for cross product!
 	};
