@@ -255,7 +255,7 @@ void moveCamera(GLFWwindow* window, lm::Camera* camera, lm::CameraControls* cont
 		-cos(yawRad) * cos(pitchRad)
 	);
 	//TODO: Using camera forward and world up (0,1,0), construct camera right and up vectors. Graham-schmidt process!
-	ew::Vec3 right = ew::Normalize(ew::Cross(forward, (0.0, 1.0, 0.0)));
+	ew::Vec3 right = ew::Normalize(ew::Cross(forward, ew::Vec3(0.0, 1.0, 0.0)));
 	//right = ew::Vec3(1, 0, 0); // debug
 	controls->right = right; // debug
 	ew::Vec3 up = ew::Normalize(ew::Cross(right, forward));
