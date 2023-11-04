@@ -15,6 +15,8 @@
 #include <ew/camera.h>
 #include <ew/cameraController.h>
 
+#include <lm/procGen.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 
@@ -82,8 +84,16 @@ int main() {
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
+	// Create plane
+	float planeWidth = 0.5f;
+	float planeHeight = 0.5f;
+	int planeSubdivisions = 5;
+	bool uScalePlane = false;
+	bool keepScalePlane = false;
+
 	//Initialize transforms
 	ew::Transform cubeTransform;
+	ew::Transform planeTransform;
 
 	resetCamera(camera,cameraController);
 
@@ -121,6 +131,24 @@ int main() {
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
+		//Draw plane
+		if (keepScalePlane)
+		{
+			ew::MeshData planeMeshData = lm::createPlane(planeWidth / planeSubdivisions, planeHeight / planeSubdivisions, planeSubdivisions);
+			ew::Mesh planeMesh(planeMeshData);
+			planeTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f); 
+			shader.setMat4("_Model", planeTransform.getModelMatrix());
+			planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		}
+		else
+		{
+			ew::MeshData planeMeshData = lm::createPlane(planeWidth, planeHeight, planeSubdivisions);
+			ew::Mesh planeMesh(planeMeshData);
+			planeTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f);  
+			shader.setMat4("_Model", planeTransform.getModelMatrix());
+			planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		}
+
 		//Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
@@ -147,6 +175,31 @@ int main() {
 				}
 			}
 
+			if (ImGui::CollapsingHeader("Plane")) {
+				ImGui::DragFloat3("Position", &planeTransform.position.x, 0.1f);
+				ImGui::Checkbox("Uniform Scaling", &uScalePlane);
+				if (uScalePlane)
+				{
+					ImGui::DragFloat("Scale", &planeWidth, 0.05f);
+					planeHeight = planeWidth;
+				}
+				else
+				{
+					ImGui::DragFloat("Width", &planeWidth, 0.05f);
+					ImGui::DragFloat("Height", &planeHeight, 0.05f);
+				}
+				ImGui::Checkbox("Keep Scale", &keepScalePlane);
+				ImGui::DragInt("Subdivisions", &planeSubdivisions, 0.1f);
+				if (ImGui::Button("Reset"))
+				{
+					planeWidth = 0.5f;
+					planeHeight = 0.5f;
+					planeSubdivisions = 5;
+					uScalePlane = false;
+					keepScalePlane = false;
+				}
+			}
+			ImGui::Text("Misc. Settings");
 			ImGui::ColorEdit3("BG color", &appSettings.bgColor.x);
 			ImGui::ColorEdit3("Shape color", &appSettings.shapeColor.x);
 			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
