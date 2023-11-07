@@ -83,17 +83,36 @@ int main() {
 	//Create cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
+	bool enableCube = true;
 
-	// Create plane
+	// Plane defaults
+	bool enablePlane = true;
 	float planeWidth = 0.5f;
 	float planeHeight = 0.5f;
-	int planeSubdivisions = 5;
+	int planeSubdivisions = 1;
 	bool uScalePlane = false;
 	bool keepScalePlane = false;
+	
+	// Cylinder defaults
+	bool enableCylinder = true;
+	float cylRadius = 0.25f;
+	float cylHeight = 0.5f;
+	int cylSegments = 8;
+	bool uScaleCylinder = false;
+
+	// Sphere defaults
+	bool enableSphere = true;
+	float sphereRadius = 0.25f;
+	int sphereSegments = 8;
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
+	planeTransform.position = ew::Vec3(0.75f, -0.25f, 0.0f);
+	ew::Transform cylTransform;
+	cylTransform.position = ew::Vec3(-1.0f, 0.0f, 0.0f);
+	ew::Transform sphereTransform;
+	sphereTransform.position = ew::Vec3(-2.0f, 0.0f, 0.0f);
 
 	resetCamera(camera,cameraController);
 
@@ -128,25 +147,47 @@ int main() {
 		shader.setVec3("_LightDir", lightF);
 
 		//Draw cube
-		shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		if (enableCube)
+		{
+			shader.setMat4("_Model", cubeTransform.getModelMatrix());
+			cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		}
 
 		//Draw plane
-		if (keepScalePlane)
+		if (enablePlane)
 		{
-			ew::MeshData planeMeshData = lm::createPlane(planeWidth / planeSubdivisions, planeHeight / planeSubdivisions, planeSubdivisions);
-			ew::Mesh planeMesh(planeMeshData);
-			planeTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f); 
-			shader.setMat4("_Model", planeTransform.getModelMatrix());
-			planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+			if (keepScalePlane)
+			{
+				ew::MeshData planeMeshData = lm::createPlane(planeWidth / planeSubdivisions, planeHeight / planeSubdivisions, planeSubdivisions);
+				ew::Mesh planeMesh(planeMeshData);
+				shader.setMat4("_Model", planeTransform.getModelMatrix());
+				planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+			}
+			else
+			{
+				ew::MeshData planeMeshData = lm::createPlane(planeWidth, planeHeight, planeSubdivisions);
+				ew::Mesh planeMesh(planeMeshData);
+				shader.setMat4("_Model", planeTransform.getModelMatrix());
+				planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+			}
 		}
-		else
+
+		// Draw cylinder
+		if (enableCylinder)
 		{
-			ew::MeshData planeMeshData = lm::createPlane(planeWidth, planeHeight, planeSubdivisions);
-			ew::Mesh planeMesh(planeMeshData);
-			planeTransform.position = ew::Vec3(1.0f, 0.0f, 0.0f);  
-			shader.setMat4("_Model", planeTransform.getModelMatrix());
-			planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+			ew::MeshData cylMeshData = lm::createCylinder(cylHeight, cylRadius, cylSegments);
+			ew::Mesh cylMesh(cylMeshData);
+			shader.setMat4("_Model", cylTransform.getModelMatrix());
+			cylMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		}
+
+		// Draw sphere
+		if (enableSphere)
+		{
+			ew::MeshData sphereMeshData = lm::createSphere(sphereRadius, sphereSegments);
+			ew::Mesh sphereMesh(sphereMeshData);
+			shader.setMat4("_Model", sphereTransform.getModelMatrix());
+			sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		}
 
 		//Render UI
@@ -174,8 +215,11 @@ int main() {
 					resetCamera(camera, cameraController);
 				}
 			}
-
+			if (ImGui::CollapsingHeader("Cube")) {
+				ImGui::Checkbox("Enable Shape", &enableCube);
+			}
 			if (ImGui::CollapsingHeader("Plane")) {
+				ImGui::Checkbox("Enable Shape", &enablePlane);
 				ImGui::DragFloat3("Position", &planeTransform.position.x, 0.1f);
 				ImGui::Checkbox("Uniform Scaling", &uScalePlane);
 				if (uScalePlane)
@@ -194,9 +238,47 @@ int main() {
 				{
 					planeWidth = 0.5f;
 					planeHeight = 0.5f;
-					planeSubdivisions = 5;
+					planeSubdivisions = 1;
 					uScalePlane = false;
 					keepScalePlane = false;
+					planeTransform.position = ew::Vec3(0.75f, -0.25f, 0.0f);
+				}
+			}
+			if (ImGui::CollapsingHeader("Cylinder")) {
+				ImGui::Checkbox("Enable Shape", &enableCylinder); 
+				ImGui::DragFloat3("Position", &cylTransform.position.x, 0.1f);
+				ImGui::Checkbox("Uniform Scaling", &uScaleCylinder);
+				if (uScaleCylinder)
+				{
+					ImGui::DragFloat("Scale", &cylRadius, 0.05f);
+					cylHeight = cylRadius * 2;
+				}
+				else
+				{
+					ImGui::DragFloat("Width", &cylRadius, 0.05f);
+					ImGui::DragFloat("Height", &cylHeight, 0.05f);
+				}
+				ImGui::DragInt("Segments", &cylSegments, 0.1f);
+				if (ImGui::Button("Reset"))
+				{
+					cylRadius = 0.25f;
+					cylHeight = 0.5f;
+					cylSegments = 8;
+					uScaleCylinder = false;
+					cylTransform.position = ew::Vec3(-1.0f, 0.0f, 0.0f);
+				}
+			}
+			if (ImGui::CollapsingHeader("Sphere")) {
+				ImGui::Checkbox("Enable Shape", &enableSphere);
+				ImGui::DragFloat3("Position", &sphereTransform.position.x, 0.1f);
+				ImGui::DragFloat("Radius", &sphereRadius, 0.05f);
+				ImGui::DragInt("Segments", &sphereSegments, 0.1f);
+				if (ImGui::Button("Reset"))
+				{
+					enableSphere = true;
+					sphereRadius = 0.25f;
+					sphereSegments = 8;
+					sphereTransform.position = ew::Vec3(-2.0f, 0.0f, 0.0f);
 				}
 			}
 			ImGui::Text("Misc. Settings");
