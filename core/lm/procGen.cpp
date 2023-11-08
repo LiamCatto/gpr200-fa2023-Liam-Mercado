@@ -14,7 +14,7 @@ namespace lm {
 		mesh.vertices.reserve(4);	// 4 x 1
 		mesh.indices.reserve(6);	// 6 x 1
 
-		ew::Vec3 normal = ew::Normalize(ew::Vec3(0.0f, 0.0f, 1.0f));
+		ew::Vec3 normal = ew::Vec3(0.0f, 0.0f, 1.0f);
 		ew::Vec3 u = ew::Vec3(normal.z, normal.x, normal.y);
 		ew::Vec3 v = ew::Cross(normal, u);
 
@@ -65,7 +65,7 @@ namespace lm {
 		mesh.vertices.reserve(4);	// 4 x 1
 		mesh.indices.reserve(6);	// 6 x 1
 
-		ew::Vec3 normal = ew::Normalize(ew::Vec3(0.0f, 0.0f, 1.0f));
+		ew::Vec3 normal = ew::Vec3(0.0f, 1.0f, 0.0f);
 		ew::Vec3 u = ew::Vec3(normal.z, normal.x, normal.y);
 		ew::Vec3 v = ew::Cross(normal, u);
 
@@ -82,7 +82,6 @@ namespace lm {
 		topV.uv = ew::Vec2(0.5, 0.5);
 		mesh.vertices.push_back(topV);
 
-		
 		// Top Ring -- Up
 		for (int i = 0; i <= numSegments; i++)
 		{
@@ -93,15 +92,27 @@ namespace lm {
 			topRingVertex.uv = ew::Vec2(cos(theta) / 2 + 0.5, sin(theta) / 2 + 0.5);
 			mesh.vertices.push_back(topRingVertex);
 		}
-
+		
 		// Top Ring -- Out
 		for (int i = 0; i <= numSegments; i++)
 		{
 			float theta = i * thetaStep;
 			ew::Vertex topRingVertex;
 			topRingVertex.pos = ew::Vec3(cos(theta) * radius, topY, sin(theta) * radius);
-			topRingVertex.normal = ew::Normalize(topRingVertex.pos);
+			topRingVertex.normal = ew::Vec3(cos(theta) / numSegments, 0, sin(theta) / numSegments);
+			topRingVertex.uv = ew::Vec2(theta / numSegments, 1);
 			mesh.vertices.push_back(topRingVertex);
+
+			/*
+			if (i == numSegments)
+			{
+				float theta = i * thetaStep;
+				ew::Vertex topRingVertex;
+				topRingVertex.pos = ew::Vec3(cos(theta) * radius, topY, sin(theta) * radius);
+				topRingVertex.normal = ew::Vec3(cos(theta) / numSegments, 0, sin(theta) / numSegments);
+				topRingVertex.uv = ew::Vec2(theta / numSegments, 1);
+				mesh.vertices.push_back(topRingVertex);
+			}*/
 		}
 
 		// Bottom Ring - Out
@@ -110,10 +121,21 @@ namespace lm {
 			float theta = i * thetaStep;
 			ew::Vertex bottomRingVertex;
 			bottomRingVertex.pos = ew::Vec3(cos(theta) * radius, bottomY, sin(theta) * radius);
-			bottomRingVertex.normal = ew::Normalize(bottomRingVertex.pos);
+			bottomRingVertex.normal = ew::Vec3(cos(theta) / numSegments, 0, sin(theta) / numSegments);
+			bottomRingVertex.uv = ew::Vec2(theta / numSegments, 0);
 			mesh.vertices.push_back(bottomRingVertex);
+
+			/*
+			if (i == numSegments)
+			{
+				float theta = i * thetaStep;
+				ew::Vertex bottomRingVertex;
+				bottomRingVertex.pos = ew::Vec3(cos(theta) * radius, bottomY, sin(theta) * radius);
+				bottomRingVertex.normal = ew::Vec3(cos(theta) / numSegments, 0, sin(theta) / numSegments);
+				bottomRingVertex.uv = ew::Vec2(theta / numSegments, 0);
+				mesh.vertices.push_back(bottomRingVertex);
+			}*/
 		}
-		
 		
 		// Bottom Ring - Down
 		for (int i = 0; i <= numSegments; i++)
@@ -186,7 +208,7 @@ namespace lm {
 		mesh.vertices.reserve(4);	// 4 x 1
 		mesh.indices.reserve(6);	// 6 x 1
 
-		ew::Vec3 normal = ew::Vec3(0.0f, 0.0f, 1.0f);
+		ew::Vec3 normal = ew::Vec3(0.0f, 1.0f, 0.0f);
 		ew::Vec3 u = ew::Vec3(normal.z, normal.x, normal.y);
 		ew::Vec3 v = ew::Cross(normal, u);
 
@@ -196,17 +218,17 @@ namespace lm {
 		float theta = 0;
 
 		// Vertices
-		for (int row = 0; row <= numSegments; row++)
+		for (int row = 0; row <= numSegments; row++) //First and last row converge at poles
 		{
-			//First and last row converge at poles
 			phi = row * phiStep;
 
-			//Duplicate column for each row
-			for (int col = 0; col <= numSegments; col++)
+			for (int col = 0; col <= numSegments; col++) //Duplicate column for each row
 			{
 				theta = col * thetaStep;
 				ew::Vertex ringVertex;
 				ringVertex.pos = ew::Vec3(radius * cos(theta) * sin(phi), radius * cos(phi), radius * sin(theta) * sin(phi));
+				ringVertex.normal = ew::Normalize(ringVertex.pos);
+				ringVertex.uv = ew::Vec2(theta / numSegments, phi / numSegments * 2); 
 				mesh.vertices.push_back(ringVertex);
 			}
 		}
