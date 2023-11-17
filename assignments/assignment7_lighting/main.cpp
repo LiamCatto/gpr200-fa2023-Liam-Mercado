@@ -27,6 +27,18 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
+struct Light {
+	ew::Vec3 position = ew::Vec3(1.0f, 5.0f, 1.0f); //World space
+	ew::Vec3 color = ew::Vec3(255.0f, 0.0f, 0.0f); //RGB
+};
+
+struct Material {
+	float ambientK; //Ambient coefficient (0-1)
+	float diffuseK; //Diffuse coefficient (0-1)
+	float specular; //Specular coefficient (0-1)
+	float shininess; //Shininess
+};
+
 int main() {
 	printf("Initializing...");
 	if (!glfwInit()) {
@@ -59,6 +71,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
+	ew::Shader light_Shader("assets/unlit.vert", "assets/unlit.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	//Create cube
@@ -66,12 +79,14 @@ int main() {
 	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
 	ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
+	ew::Mesh lightMesh(ew::createSphere(0.1f, 64));
 
 	//Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform sphereTransform;
 	ew::Transform cylinderTransform;
+	ew::Transform lightTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 	sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
@@ -98,6 +113,12 @@ int main() {
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 
+		Light lights[4];
+		shader.setVec3("_Lights[0].position", lights[0].position);
+		shader.setVec3("_Lights[0].color", lights[0].color);
+
+		light_Shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw();
@@ -112,6 +133,14 @@ int main() {
 		cylinderMesh.draw();
 
 		//TODO: Render point lights
+
+		for (int i = 0; i < 4; i++)
+		{
+			lightTransform.position = lights[i].position + ew::Vec3(i, 0.0f, 0.0f);
+			light_Shader.setMat4("_Model", lightTransform.getModelMatrix());
+			light_Shader.setVec3("_Color", lights[i].color);
+			lightMesh.draw();
+		}
 
 		//Render UI
 		{
