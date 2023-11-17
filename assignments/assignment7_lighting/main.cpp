@@ -28,8 +28,8 @@ ew::Camera camera;
 ew::CameraController cameraController;
 
 struct Light {
-	ew::Vec3 position = ew::Vec3(1.0f, 5.0f, 1.0f); //World space
-	ew::Vec3 color = ew::Vec3(255.0f, 0.0f, 0.0f); //RGB
+	ew::Vec3 position = ew::Vec3(0.0f, 2.0f, 0.0f); //World space
+	ew::Vec3 color = ew::Vec3(1.0f, 0.0f, 0.0f); //RGB
 };
 
 struct Material {
@@ -134,9 +134,15 @@ int main() {
 
 		//TODO: Render point lights
 
+		light_Shader.use();
+		light_Shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+
 		for (int i = 0; i < 4; i++)
 		{
+			lights[i].position = ew::Vec3(0.0f, 2.0f, 0.0f);
+			lights[i].color = ew::Vec3(1.0f, 0.0f, 0.0f);
 			lightTransform.position = lights[i].position + ew::Vec3(i, 0.0f, 0.0f);
+			//lightTransform.position = lights[i].position;
 			light_Shader.setMat4("_Model", lightTransform.getModelMatrix());
 			light_Shader.setVec3("_Color", lights[i].color);
 			lightMesh.draw();
