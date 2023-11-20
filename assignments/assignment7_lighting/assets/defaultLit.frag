@@ -20,15 +20,11 @@ uniform sampler2D _Texture;
 
 uniform vec3 _ViewPos;
 
-uniform float _lightIntensity;		// light intensity
-uniform vec3 _aColor;				// ambient light color
-uniform float _aCoef;				// ambient light intensity
-uniform float _shininess;			// shininess
-
-uniform bool _Enable1; // unused
-uniform bool _Enable2; // unused
-uniform bool _Enable3; // unused
-uniform bool _Enable4; // unused
+uniform vec3 _ambientColor;			// ambient light color
+uniform float _ambientK;		// ambient light intensity
+uniform float _diffuseK;		// diffuse intensity
+uniform float _specularK;		// specular intensity
+uniform float _shininess;		// shininess
 
 // Function prototypes
 
@@ -37,21 +33,20 @@ float ambient();
 float diffuse(Light light);
 float specular(Light light);
 float calcLight(Light light);
-bool enableLights[4] = { _Enable1, _Enable2, _Enable3, _Enable4 }; // unused
 
 void main(){
 	float light = 0.0;
-	vec4 color = vec4(0, 0, 0, 1);
-
+	vec3 color = vec3(0, 0, 0);
+	
 	for (int i = 0; i < MAX_LIGHTS; i++)
 	{
 		if (_Lights[i].enable == 1)
 		{
-			color += vec4(_Lights[i].color, 1) * (calcLight(_Lights[i]) / 4);
+			color += _Lights[i].color * calcLight(_Lights[i]);
 		}
 	}
 
-	FragColor = texture(_Texture,fs_in.UV) + color;
+	FragColor = texture(_Texture,fs_in.UV) * vec4(color, 1);
 }
 
 float dotProduct(vec3 a, vec3 b)
@@ -61,14 +56,14 @@ float dotProduct(vec3 a, vec3 b)
 
 float ambient()
 {
-	return _aColor * _aCoef;
+	return _ambientColor * _ambientK;
 }
 
 float diffuse(Light light)
 {
 	vec3 normal = normalize(fs_in.WorldNormal);
 	vec3 incidence = normalize(light.position - fs_in.WorldPosition);
-	return _lightIntensity * max(dotProduct(normal, incidence), 0);
+	return _diffuseK * max(dotProduct(normal, incidence), 0);
 }
 
 float specular(Light light)
@@ -79,7 +74,7 @@ float specular(Light light)
 
 	vec3 halfVector = normalize(incidence + viewDirection);
 	
-	return _lightIntensity * pow(max(dotProduct(halfVector, normal), 0), _shininess);
+	return _specularK * pow(max(dotProduct(halfVector, normal), 0), _shininess);
 }
 
 float calcLight(Light light)
